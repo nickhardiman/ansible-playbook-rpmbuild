@@ -37,9 +37,11 @@
   name: Create RPM package from source 
   vars:
     git_user: nickhardiman
-    git_token: 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
+    # Create a read-only token from https://github.com/settings/tokens?type=beta
+    # No need to give more permission than an anonymous public user has?
+    git_token: github_pat_1234...
     git_org: nickhardiman
-    git_repo: ansible-examples
+    git_repo: rpmbuild-hello-world
   tasks:
 
   # rpmbuild tree
@@ -58,43 +60,56 @@
 
   # content
   #
+  - name: Create temporary build directory
+    ansible.builtin.tempfile:
+      state: directory
+      suffix: rpmbuild
+    register: r_tempdir
+
   - name: Git checkout
     ansible.builtin.git:
       repo: "https://{{ git_user | urlencode }}:{{ git_token | urlencode }}@github.com/{{ git_org }}/{{ git_repo }}.git"
-      dest: "{{ f_source_dir }}"
+      dest: "{{ r_tempdir['path'] }}"
+      #dest: "{{ f_source_dir }}"
 
-  - name: Remove git directory
+  - name: Remove .git directory
     ansible.builtin.file:
-      path: "{{ f_source_dir }}/.git"
+      path: "{{ r_tempdir['path'] }}/.git"
       state: absent
 
-  - name: Remove other .git files
+  - name: Find other .git files
     ansible.builtin.find:
-      paths: "{{ f_source_dir }}"
+      paths: "{{ r_tempdir['path'] }}"
       patterns: ".git*"
     register: r_find
   - debug:
       var: r_find['files']
 
-  - file:
+  - name: Remove other .git files
+    ansible.builtin.file:
       path: "{{ item['path'] }}"
       state: absent
     loop: "{{ r_find['files'] }}"
-
+  
   # spec file
   #
   - name: Copy spec file
     ansible.buitin.copy: 
       remote_src: true 
-      src: "{{ f_source_dir }}/spec/{{ git_repo }}.spec"
+      src: "{{ r_tempdir['path'] }}/spec/{{ git_repo }}.spec"
       dest: "{{ f_spec_dir }}/spec/{{ git_repo }}.spec"
-If you want to move file you need to delete old file with file module
 
   - name: Remove spec dir from content
-    ansible.builtin.file: 
-      path: "{{ f_source_dir }}/spec"
-      state: absent
+      ansible.builtin.file: 
+        path: "{{ r_tempdir['path'] }}/spec"
+        state: absent
 
+
+
+  # !!! tar up remaining files, gzip and dump in SOURCES
+
+  
+  
   - name: Update release number in spec file
     ansible.builtin.lineinfile:
       path: "{{ f_spec_dir }}/spec/{{ git_repo }}.spec"
@@ -115,8 +130,10 @@ If you want to move file you need to delete old file with file module
   name: Create RPM package from source
   tasks:
 
-  - name: Bump up Build Number
+  - name: Increment release
     copy:
       content: '{ "release":"{{ansible_local.builder.release|int+1}}" }'
       dest: "/etc/ansible/facts.d/rpmbuilder.fact"
+
+  - name: Copy updated spec back to github? 
 
