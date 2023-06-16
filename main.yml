@@ -2,7 +2,8 @@
 # loosely based on 
 # https://github.com/openvswitch/ovs/blob/master/poc/playbook-centos-builder.yml
 #
-- hosts: rpmbuilder pre work
+- name: rpmbuilder pre work
+  hosts: rpmbuilder
   become: true
   gather_facts: false
   name: Create RPM package from source 
@@ -32,7 +33,8 @@
       force: false
 
 
-- hosts: rpmbuilder work
+- name: rpmbuilder work
+  hosts: rpmbuilder
   gather_facts: false
   name: Create RPM package from source 
   vars:
@@ -65,25 +67,34 @@
       state: directory
       suffix: rpmbuild
     register: r_tempdir
+  - ansible.builtin.set_fact:
+      work_dir: r_tempdir['path']
+  - debug:
+      var: work_dir
 
   - name: Git checkout
     ansible.builtin.git:
       repo: "https://{{ git_user | urlencode }}:{{ git_token | urlencode }}@github.com/{{ git_org }}/{{ git_repo }}.git"
-      dest: "{{ r_tempdir['path'] }}"
+      dest: "{{ work_dir }}"
       #dest: "{{ f_source_dir }}"
 
   - name: Remove .git directory
     ansible.builtin.file:
-      path: "{{ r_tempdir['path'] }}/.git"
+      path: "{{ work_dir }}/.git"
+      recurse: false
+      #file_type: directory
       state: absent
 
   - name: Find other .git files
     ansible.builtin.find:
-      paths: "{{ r_tempdir['path'] }}"
-      patterns: ".git*"
+      paths: "{{ work_dir }}"
+      #file_type: file
+      #patterns: ".git*"
+      patterns: "\.git.*"
+      use_regex: true
     register: r_find
   - debug:
-      var: r_find['files']
+      var: r_find
 
   - name: Remove other .git files
     ansible.builtin.file:
@@ -94,15 +105,15 @@
   # spec file
   #
   - name: Copy spec file
-    ansible.buitin.copy: 
+    ansible.builtin.copy: 
       remote_src: true 
-      src: "{{ r_tempdir['path'] }}/spec/{{ git_repo }}.spec"
+      src: "{{ work_dir }}/spec/{{ git_repo }}.spec"
       dest: "{{ f_spec_dir }}/spec/{{ git_repo }}.spec"
 
   - name: Remove spec dir from content
-      ansible.builtin.file: 
-        path: "{{ r_tempdir['path'] }}/spec"
-        state: absent
+    ansible.builtin.file: 
+      path: "{{ work_dir }}/spec"
+      state: absent
 
 
 
@@ -123,8 +134,17 @@
     args:
         chdir: "{{f_source_dir}}/openvswitch-{{version.stdout}}"
 
+  - name: move the new RPM somewhere
+    debug:
+      msg: homedir maybe
 
-- hosts: rpmbuilder post work
+  - name: remove the rpmbuild dir?
+    debug:
+      msg: why keep it
+
+
+- name: rpmbuilder post work
+  hosts: rpmbuilder
   become: true
   gather_facts: false
   name: Create RPM package from source
@@ -136,4 +156,11 @@
       dest: "/etc/ansible/facts.d/rpmbuilder.fact"
 
   - name: Copy updated spec back to github? 
+    debug:
+      msg: read/write token for rpmbuild dir?
+
+  - name: Delete the cloned git repo
+    ansible.builtin.file:
+      path: "{{ work_dir }}"
+      state: absent
 
