@@ -2,10 +2,13 @@
 
 Read package source files from   
 https://github.com/nickhardiman/rpmbuild-content.git
-and build RPMs.
+and builds these RPMs. 
+
+* ~/bello-0.0.1-1.el9.noarch.rpm 
+* ~/cello-0.0.2-1.el9.noarch.rpm 
+* ~/pello-0.0.3-1.el9.noarch.rpm 
 
 Playbook builds RPM packages according to specfile and places them in the home directory. 
-
 RPM content is based on this user guide:  
 https://rpm-packaging-guide.github.io/.
 Search for bello, cello and pello.
@@ -51,6 +54,13 @@ rpmbuild-content
 community.general.archive
 
 Only tested on RHEL 9, so maybe that too.
+
+== run
+
+[source,shell]
+----
+ansible-playbook main.yml 
+----
 
 == todo 
 
