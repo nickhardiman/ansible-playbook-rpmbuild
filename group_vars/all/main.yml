@@ -1,0 +1,17 @@
+#
+# git source
+git_host: github.com
+git_org: nickhardiman
+git_repo: rpmbuild-content
+# git credentials
+# if repo is public, any old crap will do here. 
+# if repo is private, 
+#   Create a read-only token from https://github.com/settings/tokens?type=beta
+#   No need to give more permission than an anonymous public user has?
+git_user: nickhardiman
+git_token: github_pat_1234...
+
+# RPM packages to build
+package_sources:
+  - bello
+

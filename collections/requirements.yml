@@ -1,0 +1,16 @@
+# run
+#   ansible-galaxy collection install -r collections/requirements.yml 
+# This command installs roles to ~/.ansible/collections/
+# for more information, see
+#   https://galaxy.ansible.com/docs/using/installing.html
+#
+# Install collections from Ansible Galaxy 
+# https://galaxy.ansible.com
+#
+# Install collections from Ansible Automation Hub
+# Installing from Ansible Automation Hub requires extra config.
+# Use your offline token for identification, in an env var or in ansible.cfg.
+# https://console.redhat.com/ansible/automation-hub
+#
+collections:
+  - name: community.general

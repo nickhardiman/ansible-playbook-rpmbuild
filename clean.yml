@@ -1,0 +1,16 @@
+---
+#
+#
+- name: move the new RPM somewhere
+  debug:
+    msg: homedir maybe
+
+- name: remove the rpmbuild dir?
+  debug:
+    msg: why keep it
+
+- name: Delete the cloned git repo
+  ansible.builtin.file:
+    path: "{{ f_work_dir }}"
+    state: absent
+

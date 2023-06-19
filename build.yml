@@ -1,0 +1,50 @@
+---
+#
+# rpmbuild tree
+#
+- name: Create rpmbuild directories
+  ansible.builtin.command: 
+    cmd: rpmdev-setuptree
+
+- name: Set RPM content source directory
+  ansible.builtin.set_fact:
+    f_source_dir: "~/rpmbuild/SOURCES"
+- debug:
+    var: f_source_dir
+
+- name: Set RPM spec directory
+  ansible.builtin.set_fact:
+    f_spec_dir: "~/rpmbuild/SPECS"
+- debug:
+    var: f_spec_dir
+
+
+# add spec file
+#
+- name: Copy spec file
+  ansible.builtin.copy: 
+    remote_src: true 
+    src: "{{ f_work_dir }}/{{ item }}/specs/{{ item }}.spec"
+    dest: "{{ f_spec_dir }}/{{ item }}.spec"
+  loop: "{{ package_sources }}"
+
+
+# !!! make any changes to source content here
+
+
+# tar up source files, gzip and dump in SOURCES
+- name: create archive for Source0
+  community.general.archive:
+    path: "{{ f_work_dir }}/{{ item }}/sources"
+    dest: "{{ f_source_dir }}/{{ item }}.tgz"
+  loop: "{{ package_sources }}"
+
+
+# build RPM
+#
+- name: Build rpm
+  command: rpmbuild -bb "{{ f_spec_dir }}/{{ item }}.spec"
+  args:
+      chdir: "{{f_source_dir}}"
+  loop: "{{ package_sources }}"
+
