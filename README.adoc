@@ -1,20 +1,22 @@
 = Ansible playbook for building an RPM
 
 Take source from 
-https://github.com/nickhardiman/rpmbuild-hello-world.git
+https://github.com/nickhardiman/rpmbuild-content.git
 
-Use it to build an RPM
+Use it to build RPMs.
 
 Expects to find a directory with a specfile in it. 
 
 [source,shell]
 ----
-rpmbuild-hello-world
-+ content_file_1
-+ content_file_2
-+ content_file_3
-+ spec
-  + rpmbuild-hello-world.spec
+rpmbuild-content
++ package1
+  + sources
+    + content_file_1
+    + content_file_2
+    + content_file_3
+  + specs
+    + package1.spec
 ----
 
 RPM content based on this howto article. 
@@ -23,4 +25,8 @@ https://www.redhat.com/sysadmin/create-rpm-package
 ==  requirements 
 
 Only tested on RHEL 9, so maybe that.
+
+== todo
+
+Make this work for many package sources in the same git repo.
 
