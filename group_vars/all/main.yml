@@ -13,5 +13,10 @@ git_token: github_pat_1234...
 
 # RPM packages to build
 package_sources:
-  - bello
+  - 
+    name: bello
+    version: 0.0.1
+    release: 1
+
+f_rpmbuild_dir: "~/rpmbuild"
 

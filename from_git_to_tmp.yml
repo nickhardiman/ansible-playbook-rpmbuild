@@ -1,0 +1,45 @@
+---
+#
+# download content
+#
+- name: Create temporary build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: rpmbuild
+  register: r_tempdir
+- ansible.builtin.set_fact:
+    f_work_dir: "{{ r_tempdir['path'] }}"
+    #f_work_dir: "{{ r_tempdir['path'] }}/{{ name }}-{{ version }}"
+- debug:
+    var: f_work_dir
+
+- name: Git checkout
+  ansible.builtin.git:
+    repo: "https://{{ git_user | urlencode }}:{{ git_token | urlencode }}@{{ git_host }}/{{ git_org }}/{{ git_repo }}.git"
+    dest: "{{ f_work_dir }}"
+
+
+
+# !!! make any changes to source content here
+
+# extract version and release from spec file
+
+- name: extract version line
+  ansible.builtin.shell:
+    cmd: "grep -e '^Version:' {{ f_work_dir + '/bello/specs/bello.spec' }}"
+  register: r_line_version
+
+- name: match version value
+  ansible.builtin.set_fact:
+    f_spec_version: "{{ r_line_version['stdout'] | regex_replace('Version:\\s+(\\S+)', '\\1') }}"
+
+- name: display version value
+  debug:
+    var: f_spec_version
+
+
+- name: Create temporary version directory
+  ansible.builtin.shell:
+    cmd: mv {{ f_work_dir }}/bello/sources {{ f_work_dir }}/bello/bello-{{ f_spec_version }}
+
+

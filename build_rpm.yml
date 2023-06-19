@@ -1,0 +1,33 @@
+---
+#
+#
+# build RPM
+#
+- name: Build binary RPM package
+  command: rpmbuild -bb "{{ f_rpmbuild_dir }}/SPECS/{{ item['name'] }}.spec"
+  args:
+      chdir: "{{f_rpmbuild_dir}}"
+  loop: "{{ package_sources }}"
+
+- name: Find the new RPM packages
+  ansible.builtin.find:
+    paths: "{{ f_rpmbuild_dir }}"
+    file_type: file
+    patterns: "*.rpm"
+    recurse: true
+  register: r_find
+- debug:
+    var: r_find['files']
+
+- name: move the new RPMs to home
+  ansible.builtin.copy:
+    src: "{{ item['path'] }}"
+    dest: "~"
+    remote_src: yes
+  loop: "{{ r_find['files'] }}"
+
+- name: remove the rpmbuild dir
+  ansible.builtin.file:
+    path: "{{ f_rpmbuild_dir }}"
+    state: absent
+

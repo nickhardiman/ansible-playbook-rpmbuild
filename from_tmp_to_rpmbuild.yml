@@ -1,0 +1,38 @@
+---
+#
+# rpmbuild tree
+#
+- name: Create rpmbuild directories
+  ansible.builtin.command: 
+    cmd: rpmdev-setuptree
+
+
+# add spec file
+#
+- name: Copy spec file
+  ansible.builtin.copy: 
+    remote_src: true 
+    src: "{{ f_work_dir }}/{{ item['name'] }}/specs/{{ item['name'] }}.spec"
+    #src: "{{ f_work_dir }}/{{ item['name'] }}-{{ item['version'] }}/specs/{{ item['name'] }}.spec"
+    dest: "{{ f_rpmbuild_dir }}/SPECS/{{ item['name'] }}.spec"
+  loop: "{{ package_sources }}"
+
+- name: remove the specs dir
+  ansible.builtin.file:
+    path: "{{ f_work_dir }}/specs"
+    state: absent
+
+
+# tar up source files, gzip and dump in SOURCES
+#
+- name: Create archive for Source0
+  community.general.archive:
+    path: "{{ f_work_dir }}/{{ item['name'] }}/{{ item['name'] }}-{{ f_spec_version }}"
+    dest: "{{ f_rpmbuild_dir }}/SOURCES/{{ item['name'] }}-{{ f_spec_version }}.tgz"
+  loop: "{{ package_sources }}"
+
+- name: Delete the cloned git repo
+  ansible.builtin.file:
+    path: "{{ f_work_dir }}"
+    state: absent
+
