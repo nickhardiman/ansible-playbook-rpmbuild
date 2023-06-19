@@ -11,12 +11,8 @@ git_repo: rpmbuild-content
 git_user: nickhardiman
 git_token: github_pat_1234...
 
-# RPM packages to build
-package_sources:
-  - 
-    name: bello
-    version: 0.0.1
-    release: 1
+# the list of RPM packages to build is built dynamically. 
+# see f_spec_versions
 
 f_rpmbuild_dir: "~/rpmbuild"
 

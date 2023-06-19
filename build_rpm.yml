@@ -1,14 +1,16 @@
 ---
 #
 #
-# build RPM
+# build RPMs
 #
 - name: Build binary RPM package
   command: rpmbuild -bb "{{ f_rpmbuild_dir }}/SPECS/{{ item['name'] }}.spec"
   args:
       chdir: "{{f_rpmbuild_dir}}"
-  loop: "{{ package_sources }}"
+  loop: "{{ f_spec_versions }}"
 
+# copy new RPMs 
+#
 - name: Find the new RPM packages
   ansible.builtin.find:
     paths: "{{ f_rpmbuild_dir }}"
@@ -26,6 +28,8 @@
     remote_src: yes
   loop: "{{ r_find['files'] }}"
 
+# erase the evidence
+#
 - name: remove the rpmbuild dir
   ansible.builtin.file:
     path: "{{ f_rpmbuild_dir }}"

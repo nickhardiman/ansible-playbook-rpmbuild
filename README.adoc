@@ -1,11 +1,24 @@
 = Ansible playbook for building an RPM
 
-Take source from 
+Read package source files from   
 https://github.com/nickhardiman/rpmbuild-content.git
+and build RPMs.
 
-Use it to build RPMs.
+Playbook builds RPM packages according to specfile and places them in the home directory. 
 
-Expects to find a directory with a specfile in it. 
+RPM content is based on this user guide:  
+https://rpm-packaging-guide.github.io/.
+Search for bello, cello and pello.
+
+A simpler howto is here: 
+https://www.redhat.com/sysadmin/create-rpm-package.
+The weird macros in each specfile are listed here: 
+https://docs.fedoraproject.org/en-US/packaging-guidelines/RPMMacros/.
+
+
+== requirements 
+
+Playbook expects to find a directory in this layout, with a specfile. 
 
 [source,shell]
 ----
@@ -19,14 +32,26 @@ rpmbuild-content
     + package1.spec
 ----
 
-RPM content based on this howto article. 
-https://www.redhat.com/sysadmin/create-rpm-package
+Multiple package directories are OK. 
+https://github.com/nickhardiman/rpmbuild-content.git has three. 
 
-==  requirements 
+[source,shell]
+----
+rpmbuild-content
++ package1
+...
++ package2
+...
++ package3
+...
+----
 
-Only tested on RHEL 9, so maybe that.
+== dependencies 
 
-== todo
+community.general.archive
 
-Make this work for many package sources in the same git repo.
+Only tested on RHEL 9, so maybe that too.
 
+== todo 
+
+Complete the spec files according to 

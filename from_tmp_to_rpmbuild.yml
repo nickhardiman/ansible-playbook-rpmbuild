@@ -13,9 +13,8 @@
   ansible.builtin.copy: 
     remote_src: true 
     src: "{{ f_work_dir }}/{{ item['name'] }}/specs/{{ item['name'] }}.spec"
-    #src: "{{ f_work_dir }}/{{ item['name'] }}-{{ item['version'] }}/specs/{{ item['name'] }}.spec"
     dest: "{{ f_rpmbuild_dir }}/SPECS/{{ item['name'] }}.spec"
-  loop: "{{ package_sources }}"
+  loop: "{{ f_spec_versions }}"
 
 - name: remove the specs dir
   ansible.builtin.file:
@@ -27,9 +26,9 @@
 #
 - name: Create archive for Source0
   community.general.archive:
-    path: "{{ f_work_dir }}/{{ item['name'] }}/{{ item['name'] }}-{{ f_spec_version }}"
-    dest: "{{ f_rpmbuild_dir }}/SOURCES/{{ item['name'] }}-{{ f_spec_version }}.tgz"
-  loop: "{{ package_sources }}"
+    path: "{{ f_work_dir }}/{{ item['name'] }}/{{ item['name'] }}-{{ item['version'] }}"
+    dest: "{{ f_rpmbuild_dir }}/SOURCES/{{ item['name'] }}-{{ item['version'] }}.tgz"
+  loop: "{{ f_spec_versions }}"
 
 - name: Delete the cloned git repo
   ansible.builtin.file:

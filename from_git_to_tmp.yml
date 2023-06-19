@@ -19,27 +19,83 @@
     dest: "{{ f_work_dir }}"
 
 
+- name: Find the new RPM packages
+  ansible.builtin.find:
+    paths: "{{ f_work_dir }}"
+    file_type: directory
+    patterns: "*"
+  register: r_find
+- debug:
+    var: r_find['files']
+
+
+# shenanigans to get a list of names and versions from spec files,
+# like this.
+#   "f_spec_versions": [
+#     { "name": "bello", "version": "0.0.1" },
+#     { "name": "cello", "version": "0.0.1" },
+#     { "name": "pello", "version": "0.0.1" }
+#   ]
+#
+- name: start with an empty list of names
+  ansible.builtin.set_fact:
+    f_dir_names: []
+
+- name: keep only the current directory, not full path
+  ansible.builtin.set_fact:
+    f_dir_names: "{{ f_dir_names + [ item.path | basename ] }}"
+  loop: "{{ r_find['files'] }}"
+- debug:
+    var: f_dir_names
+
+- name: extract version line from spec file
+  vars: 
+    spec_file: "{{ f_work_dir + '/' + item + '/specs/' + item + '.spec' }}"
+  ansible.builtin.shell:
+    cmd: "grep -e '^Version:' {{ spec_file }}"
+    #cmd: "grep -e '^Version:' {{ f_work_dir + '/' + item + '/specs/' + item + '.spec' }}"
+  register: r_shell_grep
+  loop: "{{ f_dir_names }}"
+# - debug:
+#     var: r_shell_grep
+
+- name: empty f_line_version
+  ansible.builtin.set_fact:
+    f_line_version: []
+
+- name: create dicts and add to f_line_version
+  ansible.builtin.set_fact:
+    f_line_version: "{{ f_line_version + [{ 'name': item['item'], 'line': item['stdout'] }] }}"
+  loop: "{{ r_shell_grep['results'] }}"
+# - debug:
+#     var: f_line_version
+
+- name: empty f_spec_versions
+  ansible.builtin.set_fact:
+    f_spec_versions: []
+
+- name: build f_spec_versions
+  vars:
+    f_version: "{{ item['line'] | regex_replace('Version:\\s+(\\S+)', '\\1') }}"
+  ansible.builtin.set_fact:
+    f_spec_versions: "{{ f_spec_versions + [{ 'name': item['name'], 'version': f_version }] }}"
+  loop: "{{ f_line_version }}"
+- debug:
+    var: f_spec_versions
+
+
 
 # !!! make any changes to source content here
 
-# extract version and release from spec file
-
-- name: extract version line
-  ansible.builtin.shell:
-    cmd: "grep -e '^Version:' {{ f_work_dir + '/bello/specs/bello.spec' }}"
-  register: r_line_version
-
-- name: match version value
-  ansible.builtin.set_fact:
-    f_spec_version: "{{ r_line_version['stdout'] | regex_replace('Version:\\s+(\\S+)', '\\1') }}"
-
-- name: display version value
-  debug:
-    var: f_spec_version
-
-
+# eg. move 
+#   /tmp/ansible.y7njzwm8rpmbuild/bello/sources/
+# to the more rpmbuild-friendly
+#   /tmp/ansible.y7njzwm8rpmbuild/bello/bello-0.0.1/
 - name: Create temporary version directory
+  vars:
+    new_name: "{{ f_work_dir }}/{{ item['name'] }}/{{ item['name'] }}-{{ item['version'] }}"
   ansible.builtin.shell:
-    cmd: mv {{ f_work_dir }}/bello/sources {{ f_work_dir }}/bello/bello-{{ f_spec_version }}
-
+    #cmd: mv {{ f_work_dir }}/bello/sources {{ f_work_dir }}/{{ item['name'] }}/{{ item['name'] }}-{{ item['version'] }}
+    cmd: mv {{ f_work_dir }}/{{ item['name'] }}/sources {{ new_name }}
+  loop: "{{ f_spec_versions }}"
 
