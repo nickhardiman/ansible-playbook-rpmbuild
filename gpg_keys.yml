@@ -1,0 +1,52 @@
+---
+# this is an example, not secure goodness. 
+# It puts an unprotected private key in the public domain.
+# To play with your own, try the gpg commands below. 
+
+- name: copy example key file
+  ansible.builtin.copy:
+    src: signing-key-private-and-public.asc
+    dest: ~/signing-key-private-and-public.asc
+
+- name: import GPG keys
+  ansible.builtin.shell:
+    cmd: gpg --import ~/signing-key-private-and-public.asc
+
+
+# gpg commands
+# !!! does not use a password to protect the private key.
+# install packages
+#      dnf install gnupg pinentry
+# create public and private key pair
+#      gpg \
+#        --quick-gen-key \
+#        --batch \
+#        --pinentry-mode loopback \
+#        --passphrase '' \
+#        'Package Manager (RPM Signing Key) <pmanager@example.com>'
+# show private key fingerprint
+#      gpg --list-secret-keys
+# show public key fingerprint
+#      gpg --list-keys
+# export private key and public key
+#      gpg --export-secret-keys --armor  --output signing-key-private-and-public.asc
+# export public key only
+#      gpg --export --armor --output verify-key-public.asc
+# same thing with an RPM-friendly name
+#      gpg --export --armor --output RPM-GPG-KEY-pmanager
+# delete private key
+# use key fingerprint, not name
+#      gpg --delete-secret-keys --batch --yes \
+#        25B81851CC45EEEB0950E63C9F566C538158A4E7
+# delete public key after deleting private key
+# use key fingerprint or name
+#      gpg --delete-keys --batch --yes  \
+#        73085D01A75B108FEB90F69D7E584E4311EF7699
+# or
+#      gpg --delete-keys --batch --yes  \
+#        'Package Manager (RPM Signing Key) <pmanager@example.com>'
+# import private key and public key
+#      gpg --import signing-key-private-and-public.asc
+# trust keys
+# create a string like this: (key fingerprint):(trust level):
+#      echo "527861DB5859391DA2228EC2632DC774CE6AA695:6:" | gpg --import-ownertrust

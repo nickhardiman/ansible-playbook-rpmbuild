@@ -1,0 +1,10 @@
+- name: Create temporary build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: rpmbuild
+  register: r_tempdir
+- ansible.builtin.set_fact:
+    f_work_dir: "{{ r_tempdir['path'] }}"
+    #f_work_dir: "{{ r_tempdir['path'] }}/{{ name }}-{{ version }}"
+- debug:
+    var: f_work_dir

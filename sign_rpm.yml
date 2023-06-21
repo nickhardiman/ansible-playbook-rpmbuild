@@ -1,0 +1,65 @@
+---
+# How to sign rpms with GPG
+# https://access.redhat.com/articles/3359321
+# dnf install gnupg pinentry rpm-sign
+# gnupg package should already be installed. 
+#
+# for install and verification, see 
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/rpm_key_module.html
+#
+- name: Find the new RPM packages
+  ansible.builtin.find:
+    paths: "~"
+    file_type: file
+    patterns: "*.rpm"
+  register: r_find_rpms
+# - debug:
+#     var: r_find_rpms['files']
+
+- name: start with an empty list
+  ansible.builtin.set_fact:
+    f_rpm_files: []
+
+- name: add full path of each RPM file
+  ansible.builtin.set_fact:
+    f_rpm_files: "{{ f_rpm_files + [ item['path'] ] }}"
+  loop: "{{ r_find_rpms['files'] }}"
+- debug:
+    var: f_rpm_files
+
+- name: Sign RPMs using GPG keys
+  ansible.builtin.shell:
+    cmd: rpm --addsign {{ item }}
+  loop: "{{ f_rpm_files }}"
+
+
+# rpm 
+# install packages
+#      dnf install rpm-sign
+# check a package signature
+# unsigned package shows (none)
+#      rpm -qip ~/bello-0.0.1-1.el9.noarch.rpm | grep Signature
+# sign a package
+# add private key and public key to the GPG keyring
+#      gpg --import signing-key-private-and-public.asc
+# add RPM macros to config file 
+#      cat <<EOF>>~/.rpmmacros
+#      %_signature gpg
+#      %_gpg_path ~/.gnupg
+#      %_gpg_name Package Manager
+#      %_gpgbin /usr/bin/gpg2
+#      %__gpg_sign_cmd %{__gpg} gpg --force-v3-sigs --batch --verbose \
+#          --no-armor --no-secmem-warning --local-user "%{_gpg_name}" \
+#          --sign --detach-sign --output %{__signature_filename} \
+#          --digest-algo sha256 %{__plaintext_filename}
+#      EOF
+# sign a package
+#      rpm --addsign ~/bello-0.0.1-1.el9.noarch.rpm
+# check a package signature
+# signed package shows a line with warning...NOKEY and a line with RSA/SHA256...
+#      rpm -qip ~/bello-0.0.1-1.el9.noarch.rpm | grep Signature
+# list public keys in RPM database
+#      rpm -q gpg-pubkey --qf '%{name}-%{version}-%{release} --> %{summary}\n'
+# add the public key to the RPM database
+# fixes NOKEY warning
+#      sudo rpm --import RPM-GPG-KEY-pmanager 

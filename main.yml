@@ -6,27 +6,23 @@
 # RPM packaging user guide
 # https://rpm-packaging-guide.github.io/
 #
-# install packages, requires elevated privilege
-- name: rpmbuilder pre work
-  hosts: rpmbuilder
-  become: true
-  gather_facts: false
-  tasks:
-    #- ansible.builtin.include_tasks: 
-    #    file: prep.yml
+# For preparatory work, see playbook-prep.yml.
+# This playbook installs packages, so it requires elevated privilege.
 
-
-- name: rpmbuilder work
+- name: Rpmbuilder work
   hosts: rpmbuilder
   gather_facts: false
   tasks:
-    - ansible.builtin.include_tasks: 
+    - ansible.builtin.include_tasks:
         file: "{{ tasks_file }}"
-      loop: 
-        # defines f_spec_version, f_work_dir, f_source_dir and f_spec_dir
-        - from_git_to_tmp.yml
-        - from_tmp_to_rpmbuild.yml
-        - build_rpm.yml
-      loop_control: 
+      loop:
+        # defines f_work_dir and more
+        - tempdir_create.yml
+        # - from_git_to_tmp.yml
+        # - from_tmp_to_rpmbuild.yml
+        # - build_rpm.yml
+        - gpg_keys.yml
+        - sign_rpm.yml
+        #- tempdir_delete.yml
+      loop_control:
         loop_var: tasks_file
-

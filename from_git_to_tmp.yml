@@ -2,16 +2,6 @@
 #
 # download content
 #
-- name: Create temporary build directory
-  ansible.builtin.tempfile:
-    state: directory
-    suffix: rpmbuild
-  register: r_tempdir
-- ansible.builtin.set_fact:
-    f_work_dir: "{{ r_tempdir['path'] }}"
-    #f_work_dir: "{{ r_tempdir['path'] }}/{{ name }}-{{ version }}"
-- debug:
-    var: f_work_dir
 
 - name: Git checkout
   ansible.builtin.git:
@@ -19,7 +9,7 @@
     dest: "{{ f_work_dir }}"
 
 
-- name: Find the new RPM packages
+- name: Find the directory names, with paths
   ansible.builtin.find:
     paths: "{{ f_work_dir }}"
     file_type: directory
@@ -74,7 +64,7 @@
   ansible.builtin.set_fact:
     f_spec_versions: []
 
-- name: build f_spec_versions
+- name: Add dicts to f_spec_versions list
   vars:
     f_version: "{{ item['line'] | regex_replace('Version:\\s+(\\S+)', '\\1') }}"
   ansible.builtin.set_fact:

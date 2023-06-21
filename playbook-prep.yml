@@ -1,0 +1,28 @@
+---
+# install packages, requires elevated privilege
+- name: Rpmbuilder pre work
+  hosts: rpmbuilder
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Install RPM build tools
+      ansible.builtin.yum:
+        update_cache: true
+        name:
+          - yum-utils
+          - rpmdevtools
+          - createrepo
+          - git
+          - rpm-sign
+          - gnupg
+          - pinentry
+        state: present
+
+    - name: copy example public key file
+      ansible.builtin.copy:
+        src: RPM-GPG-KEY-pmanager
+        dest: ~/RPM-GPG-KEY-pmanager
+
+    - name: add the public key to the RPM database
+      ansible.builtin.shell:
+        cmd: rpm --import ~/RPM-GPG-KEY-pmanager 

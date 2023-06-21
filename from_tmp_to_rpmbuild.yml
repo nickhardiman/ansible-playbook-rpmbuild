@@ -30,8 +30,3 @@
     dest: "{{ f_rpmbuild_dir }}/SOURCES/{{ item['name'] }}-{{ item['version'] }}.tgz"
   loop: "{{ f_spec_versions }}"
 
-- name: Delete the cloned git repo
-  ansible.builtin.file:
-    path: "{{ f_work_dir }}"
-    state: absent
-

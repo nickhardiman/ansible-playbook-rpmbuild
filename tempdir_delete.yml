@@ -1,0 +1,4 @@
+- name: Delete the temporary working directory
+  ansible.builtin.file:
+    path: "{{ f_work_dir }}"
+    state: absent
