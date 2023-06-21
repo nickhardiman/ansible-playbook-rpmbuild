@@ -3,6 +3,8 @@
 # https://access.redhat.com/articles/3359321
 # Securing RPM signing keys
 # https://www.redhat.com/en/blog/securing-rpm-signing-keys
+# RPM and GPG: How to verify Linux packages before installing them
+# https://www.redhat.com/sysadmin/rpm-gpg-verify-packages
 #
 # for install and verification, see 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/rpm_key_module.html
@@ -63,3 +65,5 @@
 # add the public key to the RPM database
 # fixes NOKEY warning
 #      sudo rpm --import RPM-GPG-KEY-pmanager 
+# remove the public key from the RPM database
+#      sudo rpm -e gpg-pubkey-352c64e5-52ae6884

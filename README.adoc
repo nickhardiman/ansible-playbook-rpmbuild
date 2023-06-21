@@ -2,11 +2,18 @@
 
 Read package source files from   
 https://github.com/nickhardiman/rpmbuild-content.git
-and builds these RPMs. 
+and builds and signs these RPMs. 
 
 * ~/bello-0.0.1-1.el9.noarch.rpm 
 * ~/cello-0.0.2-1.el9.noarch.rpm 
 * ~/pello-0.0.3-1.el9.noarch.rpm 
+
+
+== preparation 
+
+playbook-prep.yml installs packages. 
+
+== build 
 
 Playbook builds RPM packages according to specfile and places them in the home directory. 
 RPM content is based on this user guide:  
@@ -17,6 +24,37 @@ A simpler howto is here:
 https://www.redhat.com/sysadmin/create-rpm-package.
 The weird macros in each specfile are listed here: 
 https://docs.fedoraproject.org/en-US/packaging-guidelines/RPMMacros/.
+
+== sign
+
+The playbook installs GPG keys into your keyring and into RPM's database. 
+
+You probably want to get rid of these. 
+If you are not a GPG user, the easiest way to do this is to remove your keyring by deleting the entire Gnu Privacy Guard directory.
+
+
+[source,shell]
+----
+rm -rf ~/.gnupg/
+----
+
+The slightly trickier precision way is to delete the new keys from your keyring.
+Find the fingerprint and delete private and public keys. 
+
+[source,shell]
+----
+gpg --list-keys
+gpg --delete-secret-keys --batch --yes  25B81851CC45EEEB0950E63C9F566C538158A4E7
+gpg --delete-keys --batch --yes  25B81851CC45EEEB0950E63C9F566C538158A4E7
+----
+
+Remove the RPM key by finding the name and deleting it. 
+
+[source,shell]
+----
+rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE}\t%{SUMMARY}\n'
+rpm -e gpg-pubkey-352c64e5-52ae6884
+----
 
 
 == requirements 
@@ -64,4 +102,6 @@ ansible-playbook main.yml
 
 == todo 
 
-Complete the spec files according to 
+Complete the spec files according to https://rpm-packaging-guide.github.io/.
+
+Download GPG keys to a temporary dir, not home. 
