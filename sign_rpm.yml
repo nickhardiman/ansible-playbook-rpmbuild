@@ -1,8 +1,8 @@
 ---
 # How to sign rpms with GPG
 # https://access.redhat.com/articles/3359321
-# dnf install gnupg pinentry rpm-sign
-# gnupg package should already be installed. 
+# Securing RPM signing keys
+# https://www.redhat.com/en/blog/securing-rpm-signing-keys
 #
 # for install and verification, see 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/rpm_key_module.html

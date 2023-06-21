@@ -1,4 +1,7 @@
 ---
+# possibly better 
+# https://github.com/netson/ansible-gpg-key
+#
 # this is an example, not secure goodness. 
 # It puts an unprotected private key in the public domain.
 # To play with your own, try the gpg commands below. 
